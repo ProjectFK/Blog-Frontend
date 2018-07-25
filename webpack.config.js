@@ -1,6 +1,8 @@
-const path = require('path');
-const VueLoaderPlugin = require('vue-loader/lib/plugin');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
+let path = require('path');
+let VueLoaderPlugin = require('vue-loader/lib/plugin');
+let HtmlWebpackPlugin = require('html-webpack-plugin');
+let MiniCssExtractPlugin = require('mini-css-extract-plugin');
+let CleanerPlugin = require('clean-webpack-plugin');
 
 module.exports = {
     mode: "development",
@@ -39,25 +41,27 @@ module.exports = {
             {
                 test: /\.css$/,
                 use: [
-                    'vue-style-loader',
+                    MiniCssExtractPlugin.loader,
                     'css-loader'
                 ]
             },
 
             {
                 test: /\.vue$/,
-                loader: 'vue-loader'
+                use: [
+                    'vue-loader'
+                ]
             },
 
             {
                 test: /\.(jpg|png|svg)$/,
                 use: [
                     {
-                        loader: 'file-loader',
+                        loader: "url-loader",
                         options: {
-                            name: '[name].[ext]',
-                            outputPath: 'img/',
-                            publicPath: 'img/'
+                            limit: 1024,
+                            name: "[name].[hash:10].[ext]",
+
                         }
                     }
                 ]
@@ -67,10 +71,21 @@ module.exports = {
     },
 
     plugins: [
+        //Vue loader
         new VueLoaderPlugin(),
+
+        //Extract html file
         new HtmlWebpackPlugin({
-          template: 'login/index.html'
-        })
-    ]
+            template: 'login/index.html'
+        }),
+
+        //Extract css as file
+        new MiniCssExtractPlugin({
+            filename: 'style.css'
+        }),
+
+        //Directory cleaner
+        new CleanerPlugin(['build']),
+    ],
 
 };
