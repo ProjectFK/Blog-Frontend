@@ -1,24 +1,37 @@
 let path = require('path');
+let fs = require('fs');
+// Load vue file
 let VueLoaderPlugin = require('vue-loader/lib/plugin');
+// Copy & Load HTML
 let HtmlWebpackPlugin = require('html-webpack-plugin');
+// Extract CSS as file
 let MiniCssExtractPlugin = require('mini-css-extract-plugin');
+// Reset output directory
 let CleanerPlugin = require('clean-webpack-plugin');
+// Minimize CSS
 let OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
+// Minimize JS
 let UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+// Rest decencies to cdn
 let WebpackCdnPlugin = require('webpack-cdn-plugin');
+// Sub-resource Integrity
 let WebpackSubresourceIntegrityPlugin = require('webpack-subresource-integrity');
 
 let config = {
 
     context: path.resolve(__dirname, 'src'),
 
+    // Well... Entries
     entry: {
         login: './login/app.js',
     },
 
     output: {
+        // Output path
         path: path.resolve(__dirname, 'build'),
+        // Distribute bundles depends on their entry name
         filename: '[name]/[name].bundle[hash:5].js',
+        // Cross Origin Loading attr is required by Sub-resource Integrity
         crossOriginLoading: 'anonymous',
     },
 
@@ -26,6 +39,8 @@ let config = {
 
         rules: [
             {
+                // Compile js to es2015 to support more browsers but allow us to use more fancy
+                // stuff.... I hope mike will use this feature
                 test: /\.js$/,
                 use: [
                     {
@@ -38,11 +53,14 @@ let config = {
             },
 
             {
+                // Html-loader for webpack to understand what is HTML....
+                // Work with html-webpack-plugin
                 test: /\.html$/,
                 use: ['html-loader']
             },
 
             {
+                // To extract css out from bundle
                 test: /\.css$/,
                 use: [
                     MiniCssExtractPlugin.loader,
@@ -51,6 +69,7 @@ let config = {
             },
 
             {
+                // To parse .vue files
                 test: /\.vue$/,
                 use: [
                     'vue-loader'
@@ -58,6 +77,7 @@ let config = {
             },
 
             {
+                // To convert all jpg/jpeg/png file to webp file for saving money!
                 test: /\.(jpe?g|png)$/,
                 use: [
                     {
@@ -74,6 +94,7 @@ let config = {
             },
 
             {
+                // Good enough
                 test: /\.webp$/,
                 use: [
                     {
@@ -87,6 +108,7 @@ let config = {
             },
 
             {
+                // Inline svg which has the size under 4096
                 test: /\.svg$/,
                 use: [
                     {
@@ -107,12 +129,6 @@ let config = {
         //Vue loader
         new VueLoaderPlugin(),
 
-        //Extract html file
-        new HtmlWebpackPlugin({
-            template: 'login/index.html',
-            filename: 'login/index.html'
-        }),
-
         //Extract css as file
         new MiniCssExtractPlugin({
             filename: '[name]/[name].style[hash:5].css'
@@ -121,6 +137,7 @@ let config = {
         //Directory cleaner
         new CleanerPlugin(['build']),
 
+        // Extract vue dependency to cdn
         new WebpackCdnPlugin({
             modules: [
                 {
@@ -131,13 +148,38 @@ let config = {
             prodUrl: 'https://cdn.jsdelivr.net/npm/:name@:version/:path'
         }),
 
+        // Sub-resource integrity
         new WebpackSubresourceIntegrityPlugin({
             hashFuncNames: ['sha256', 'sha384'],
             enabled: true
         }),
-    ],
+    ]
 
 };
+
+// html-webpack-plugin automatically added by entry name
+// Storage for auto-generated HTML Plugins
+let HTMLPlugins = [];
+
+// Discover index.html by config.entry
+for (let entryName in config.entry) {
+    // For the sake of not having a warming!
+    if (config.entry.hasOwnProperty(entryName)) {
+        let contentPath = path.dirname(config.entry[entryName]) + "/index.html";
+        let b = fs.existsSync(config.context + '/' + contentPath);
+        let consoleLog =
+            ['Entry', entryName, 'index.html', b ? 'loaded' : 'missing', 'from content path:', contentPath].join(' ');
+        console.log(consoleLog);
+        if (b)
+            HTMLPlugins = HTMLPlugins.concat(new HtmlWebpackPlugin({
+                filename: contentPath,
+                template: contentPath,
+            }));
+    }
+}
+
+// Combine both auto-generated HTMLPlugins with actual plugins
+config.plugins = HTMLPlugins.concat(config.plugins);
 
 module.exports = (env, argv) => {
 
