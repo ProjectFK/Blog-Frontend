@@ -14,14 +14,15 @@ let OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
 let UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 // Rest decencies to cdn
 let WebpackCdnPlugin = require('webpack-cdn-plugin');
-// Sub-resource Integrity
-let WebpackSubresourceIntegrityPlugin = require('webpack-subresource-integrity');
+// Inject webp support detection script to every html
+let WebpSupportScriptInjectionPlugin = require('./WebpSupportScriptInjectionPlugin');
 
 let config = {
 
     context: path.resolve(__dirname, 'src'),
 
     // Well... Entries
+    // Logic below will automatically add HTMLPlugin about index.html within the same folder if the file exists
     entry: {
         login: './login/app.js',
     },
@@ -30,7 +31,7 @@ let config = {
         // Output path
         path: path.resolve(__dirname, 'build'),
         // Distribute bundles depends on their entry name
-        filename: '[name]/[name].bundle[hash:5].js',
+        filename: '[name]/[name].bundle[chunkhash:5].js',
         // Cross Origin Loading attr is required by Sub-resource Integrity
         crossOriginLoading: 'anonymous',
     },
@@ -120,7 +121,7 @@ let config = {
                         }
                     }
                 ]
-            }
+            },
 
         ]
     },
@@ -131,7 +132,7 @@ let config = {
 
         //Extract css as file
         new MiniCssExtractPlugin({
-            filename: '[name]/[name].style[hash:5].css'
+            filename: '[name]/[name].style[chunkhash:5].css'
         }),
 
         //Directory cleaner
@@ -148,12 +149,8 @@ let config = {
             prodUrl: 'https://cdn.jsdelivr.net/npm/:name@:version/:path'
         }),
 
-        // Sub-resource integrity
-        new WebpackSubresourceIntegrityPlugin({
-            hashFuncNames: ['sha256', 'sha384'],
-            enabled: true
-        }),
-    ]
+        new WebpSupportScriptInjectionPlugin(),
+    ],
 
 };
 
@@ -174,6 +171,7 @@ for (let entryName in config.entry) {
             HTMLPlugins = HTMLPlugins.concat(new HtmlWebpackPlugin({
                 filename: contentPath,
                 template: contentPath,
+                chunks: [entryName],
             }));
     }
 }
@@ -199,10 +197,6 @@ module.exports = (env, argv) => {
             ]
         };
     }
-
-    console.log(
-        "\n\nBuilding with " + config.mode + " mode:\n\nConfig is following:\n\n" + JSON.stringify(config) + "\n\n"
-    );
 
     return config;
 };
