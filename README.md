@@ -7,6 +7,7 @@ this is a bridging project to have and develop our ability to create our forum l
 This repository is the front end of the blog project, based on
 - Html, css and javascript
 - Vue.js
+- CryptoJs
 
 # Interesting Facts
 1. I argued with the backend owner on how to do ajax for days... Since I don't want to use Jquery, as a noobon frontend,
