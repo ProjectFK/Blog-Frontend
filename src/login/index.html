@@ -2,6 +2,31 @@
 <html lang="en">
 	<head>
 		<meta charset="UTF-8">
+		<link href="https://fonts.googleapis.com/css?family=Russo+One" rel="stylesheet" >
+		<script src="https://cdn.bootcss.com/crypto-js/3.1.9/core.js"></script>
+		<script src="https://cdn.bootcss.com/crypto-js/3.1.9/hmac.js"></script>
+		<script src="https://cdn.bootcss.com/crypto-js/3.1.9/hmac-sha1.js"></script>
+		<script src="https://cdn.bootcss.com/crypto-js/3.1.9/sha1.js"></script>
+
+		<script type="text/javascript">
+			function getTimeStamp(){
+				seconds = Math.round(new Date().getTime() / 1000);
+				return seconds;
+			}
+
+			var fakevap = "12345678";//a fake vaptcha challenge id,used before vaptch online
+			
+			function commit(){
+				var username = document.getElementById("username").value;
+				var password = document.getElementById("password").value;
+				var hash = CryptoJS.HmacSHA1(username+password+getTimeStamp(),fakevap);
+				var stringified = hash.toString();
+				//ready to fetch here
+				console.log(hash);
+				console.log(stringified);
+				//print fetch() information to be ready for next step and debug
+			}
+		</script>
 		<title>Login | KCIBALD BLOG</title>
 	</head>
 	<body>
@@ -9,12 +34,11 @@
 			<img id="bald" src="theBald.svg" alt="The Bald!"/>
 			<h1><span class="russo">KCIBALD</span> | <span class="harrington">BLOG</span></h1>
 			<div>
-				<input type="text" placeholder="User name" maxlength="25">
-				<input type="password" placeholder="Password" maxlength="30">
-				<button type="button">login</button>
+				<input type="text" placeholder="User name" id="username" maxlength="25">
+				<input type="password" placeholder="Password" id="password" maxlength="30">
+
+				<button type="button" onclick="commit()">login</button>
 			</div>
 		</div>
-		<div id="vue-mound"></div>
 	</body>
-	<link href="https://fonts.googleapis.com/css?family=Russo+One" rel="stylesheet" >
 </html>
