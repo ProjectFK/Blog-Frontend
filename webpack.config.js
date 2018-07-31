@@ -181,7 +181,7 @@ config.plugins = HTMLPlugins.concat(config.plugins);
 
 module.exports = (env, argv) => {
 
-    const isDev = argv === undefined || argv.mode === 'production';
+    const isDev = !(argv === undefined || argv.mode === 'production');
 
     if (isDev) {
         config.mode = 'development';
