@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<title>KCIBALD | Recaptcha Testing</title>
+		<script src="https://www.recaptcha.net/recaptcha/api.js" async defer></script>
+		<script>
+            function f(token) {
+                document.getElementById('info').innerText = "token is: \n" + token;
+            }
+		</script>
+	</head>
+	<body>
+		<h1>the page is loaded!</h1>
+		<button id="button" class="g-recaptcha"
+				data-sitekey="6LepWGkUAAAAAOuDkXsDYx5ohu-kas5-As7x047v"
+				data-callback="f">
+			click!
+		</button>
+		<p id="info"></p>
+	</body>
+</html>

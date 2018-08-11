@@ -25,6 +25,7 @@ let config = {
     // Logic below will automatically add HTMLPlugin about index.html within the same folder if the file exists
     entry: {
         login: './login/app.js',
+        recaptcha_testing: './recaptcha_testing/app.js'
     },
 
     output: {
@@ -149,7 +150,7 @@ let config = {
             prodUrl: 'https://cdn.jsdelivr.net/npm/:name@:version/:path'
         }),
 
-        new WebpSupportScriptInjectionPlugin(),
+        // new WebpSupportScriptInjectionPlugin(),
     ],
 
 };
