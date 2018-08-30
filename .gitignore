@@ -119,4 +119,7 @@ fabric.properties
 # Editor-based Rest Client
 .idea/httpRequests
 
+#Macbook custome seeting for finder
+*.DS_Store
+
 package-lock.json
