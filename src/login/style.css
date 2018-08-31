@@ -81,3 +81,7 @@ button:hover {
 button:active {
     background-color: #90EC00;
 }
+
+.grecaptcha-badge {
+    display: none;
+}
