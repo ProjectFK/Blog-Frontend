@@ -23,8 +23,7 @@ function login(captcha){
     		method: 'post',
     		mode: 'cors'
        	}
-    ).then(response => console.log(response));
-}
+    ).then(function(response){return(response.text())}).then(html => console.log(html))}
 
 console.log('app.js loaded!');
 
