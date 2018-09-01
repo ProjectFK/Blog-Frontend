@@ -9,6 +9,20 @@ window.onload = () => {
     });
 };
 
+document.onkeyup = (e) => {
+    var event = e || window.event;
+    var key = event.which || event.keyCode || event.charCode;
+    if (key == 13) {
+        document.getElementById('login').click();
+    }
+};
+
+
+function loginprocess(responsetext){
+    //process after got the response
+    console.log(responsetext);
+}
+
 function login(captcha){
 	const username = document.getElementById("username").value;
     const password = document.getElementById("password").value;
@@ -23,7 +37,8 @@ function login(captcha){
     		method: 'post',
     		mode: 'cors'
        	}
-    ).then(function(response){return(response.text())}).then(html => console.log(html))}
+    ).then(function(response){return(response.text())})
+    .then(text => loginprocess(text))}
 
 console.log('app.js loaded!');
 
