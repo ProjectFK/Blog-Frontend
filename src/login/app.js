@@ -1,15 +1,29 @@
 import './style.css';
 
-var loginbut = document.getElementById("login");
+let siteKey = '6LepWGkUAAAAAOuDkXsDYx5ohu-kas5-As7x047v';
 
-loginbut.setAttribute('data-callback','login');
+window.onload = () => {
+    grecaptcha.render('login', {
+        'sitekey': siteKey,
+        'callback': login
+    });
+};
 
 function login(captcha){
 	const username = document.getElementById("username").value;
     const password = document.getElementById("password").value;
     console.log(username + "," + password);
-    console.log(captcha)
+    console.log(captcha);
     //log fetch() information to be ready for next step and debug
+    fetch(
+    	"http://localhost:8000/",
+    	{
+    		body: 'username='+username+'&password='+password,
+    		cache: 'no-cache',
+    		method: 'post',
+    		mode: 'cors'
+       	}
+    ).then(response => console.log(response));
 }
 
 console.log('app.js loaded!');
