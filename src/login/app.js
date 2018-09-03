@@ -24,8 +24,8 @@ function loginprocess(responsetext){
 }
 
 function login(captcha){
-	const username = document.getElementById("username").value;
-    const password = document.getElementById("password").value;
+	var username = document.getElementById("username").value;
+    var password = document.getElementById("password").value;
     console.log(username + "," + password);
     console.log(captcha);
     //log fetch() information to be ready for next step and debug
@@ -38,7 +38,7 @@ function login(captcha){
     		mode: 'cors'
        	}
     ).then(function(response){return(response.text())})
-    .then(text => loginprocess(text))}
+    .then(text => loginprocess(text))};
 
 console.log('app.js loaded!');
 

@@ -83,3 +83,7 @@ button:active{
     background-color: rgba(255,229,5,0.50);
     transition: 0.5s;
 }
+
+.grecaptcha-badge {
+    display: none;
+}

@@ -99,6 +99,7 @@ body {
 h1 {
 	margin: 10px, 0;
 }
+
 /*wang editor's requirements*/
 table {
 	border-top: 1px solid #ccc;
@@ -140,6 +141,3 @@ pre code {
 ul, ol {
 	margin: 10px 0 10px 20px;
 }
-
-.grecaptcha-badge {
-    display: none;
