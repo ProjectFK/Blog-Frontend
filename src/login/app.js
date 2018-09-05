@@ -1,45 +1,60 @@
 import './style.css';
 
+const loginlib = require('./loginLib');
+
 let siteKey = '6LepWGkUAAAAAOuDkXsDYx5ohu-kas5-As7x047v';
 
 window.onload = () => {
     grecaptcha.render('login', {
         'sitekey': siteKey,
-        'callback': login
+        'callback': startLogin
     });
 };
 
-document.onkeyup = (e) => {
-    var event = e || window.event;
-    var key = event.which || event.keyCode || event.charCode;
-    if (key == 13) {
+document.onkeyup = (keyEvent) => {
+    if (keyEvent.key === 'Enter')
         document.getElementById('login').click();
-    }
 };
 
-
-function loginprocess(responsetext){
-    //process after got the response
-    console.log(responsetext);
+/**
+ * @param serverResponse when server says it's an invalidate response
+ * @param connectionException when there's connection error
+ */
+function loginRequestFailed(serverResponse, connectionException) {
+//    Exception logic
+    console.log(serverResponse);
+    console.log(connectionException);
 }
 
-function login(captcha){
-	var username = document.getElementById("username").value;
-    var password = document.getElementById("password").value;
-    console.log(username + "," + password);
-    console.log(captcha);
-    //log fetch() information to be ready for next step and debug
-    fetch(
-    	"http://localhost:8000/",
-    	{
-    		body: 'username='+username+'&password='+password,
-    		cache: 'no-cache',
-    		method: 'post',
-    		mode: 'cors'
-       	}
-    ).then(function(response){return(response.text())})
-    .then(text => loginprocess(text))};
+function startLogin(token) {
+    try {
 
-console.log('app.js loaded!');
+        var username = document.getElementById('username').value;
+        var password = document.getElementById('password').value;
+
+        console.log(`login with user: ${username}, password: ${password}`);
+        console.log(`recaptcha token: ${token}`);
+
+        if (!loginlib.validator.username(username)) {
+            console.log(`user name: ${username} is invalidate`);
+            return
+        }
+
+        if (!loginlib.validator.password(password)) {
+            console.log(`password: ${username} is invalidate`);
+            return
+        }
+
+        loginlib
+            .attemptLogin(username, password, token)
+            .then((value => loginRequestFailed(value, null)))
+            .catch(exception => loginRequestFailed(null, exception))
+
+    } catch (e) {
+        //Recaptcha do not handle error from our callable
+        console.error(e);
+    }
+}
+
 
 //TODO: login logic
