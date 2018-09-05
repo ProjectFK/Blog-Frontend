@@ -12,10 +12,6 @@ let CleanerPlugin = require('clean-webpack-plugin');
 let OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
 // Minimize JS
 let UglifyJsPlugin = require('uglifyjs-webpack-plugin');
-// Rest decencies to cdn
-let WebpackCdnPlugin = require('webpack-cdn-plugin');
-// Inject webp support detection script to every html
-let WebpSupportScriptInjectionPlugin = require('./WebpSupportScriptInjectionPlugin');
 
 let config = {
 
@@ -47,9 +43,6 @@ let config = {
                 use: [
                     {
                         loader: 'babel-loader',
-                        options: {
-                            presets: ['es2015']
-                        }
                     }
                 ]
             },
@@ -79,39 +72,8 @@ let config = {
             },
 
             {
-                // To convert all jpg/jpeg/png file to webp file for saving money!
-                test: /\.(jpe?g|png)$/,
-                use: [
-                    {
-                        loader: 'file-loader',
-                        options: {
-                            name: '[name].[hash:5].webp',
-                            outputPath: 'image/',
-                        }
-                    },
-                    {
-                        loader: 'webp-loader'
-                    },
-                ]
-            },
-
-            {
-                // Good enough
-                test: /\.webp$/,
-                use: [
-                    {
-                        loader: "file-loader",
-                        options: {
-                            name: '[name].[hash:5].[ext]',
-                            outputPath: 'image/',
-                        }
-                    }
-                ]
-            },
-
-            {
                 // Inline svg which has the size under 4096
-                test: /\.svg$/,
+                test: /\.(jpe?g|png|webp|svg)$/,
                 use: [
                     {
                         loader: 'url-loader',
@@ -139,18 +101,18 @@ let config = {
         //Directory cleaner
         new CleanerPlugin(['build']),
 
+        // By using jsdelivr, we can drop the need to request another library for lowing bundle size
         // Extract vue dependency to cdn
-        new WebpackCdnPlugin({
-            modules: [
-                {
-                    name: 'vue',
-                    var: 'Vue',
-                },
-            ],
-            prodUrl: 'https://cdn.jsdelivr.net/npm/:name@:version/:path'
-        }),
+        // new WebpackCdnPlugin({
+        //     modules: [
+        //         {
+        //             name: 'vue',
+        //             var: 'Vue',
+        //         },
+        //     ],
+        //     prodUrl: 'https://cdn.jsdelivr.net/npm/:name@:version/:path'
+        // }),
 
-        // new WebpSupportScriptInjectionPlugin(),
     ],
 
 };
