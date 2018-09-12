@@ -12,6 +12,10 @@ let CleanerPlugin = require('clean-webpack-plugin');
 let OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
 // Minimize JS
 let UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+// Inject webp support detection script to every html
+let WebpackSubresourceIntegrityPlugin = require('webpack-subresource-integrity');
+// Bundle analyzer
+let BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 let config = {
 
@@ -148,6 +152,13 @@ module.exports = (env, argv) => {
 
     if (isDev) {
         config.mode = 'development';
+        config.plugins = config.plugins.concat(
+            new BundleAnalyzerPlugin({
+                analyzerMode: 'static',
+                reportFilename: 'BundleReport.html',
+                logLevel: 'info'
+            })
+        );
     } else {
         config.mode = 'production';
         config.optimization = {
@@ -159,6 +170,12 @@ module.exports = (env, argv) => {
                 new OptimizeCSSAssetsPlugin()
             ]
         };
+        config.plugins = config.plugins.concat(
+            new WebpackSubresourceIntegrityPlugin({
+                hashFuncNames: ['sha256'],
+                enabled: true
+            })
+        );
     }
 
     return config;
