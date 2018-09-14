@@ -1,5 +1,6 @@
 let path = require('path');
 let fs = require('fs');
+let version = require('./package').version;
 // Load vue file
 let VueLoaderPlugin = require('vue-loader/lib/plugin');
 // Copy & Load HTML
@@ -29,8 +30,6 @@ let config = {
     },
 
     output: {
-        // Output path
-        path: path.resolve(__dirname, 'build'),
         // Distribute bundles depends on their entry name
         filename: '[name]/[name].bundle[chunkhash:5].js',
         // Cross Origin Loading attr is required by Sub-resource Integrity
@@ -152,15 +151,11 @@ module.exports = (env, argv) => {
 
     if (isDev) {
         config.mode = 'development';
-        config.plugins = config.plugins.concat(
-            new BundleAnalyzerPlugin({
-                analyzerMode: 'static',
-                reportFilename: 'BundleReport.html',
-                logLevel: 'info'
-            })
-        );
+        config.output.path = path.resolve(__dirname, 'build');
     } else {
         config.mode = 'production';
+        config.output.path = path.resolve(__dirname, 'dist');
+        config.output.publicPath = `https://cdn.jsdelivr.net/gh/ProjectFK/Blog-Frontend@${version}/dist/`;
         config.optimization = {
             minimizer: [
                 new UglifyJsPlugin({
@@ -174,6 +169,12 @@ module.exports = (env, argv) => {
             new WebpackSubresourceIntegrityPlugin({
                 hashFuncNames: ['sha256'],
                 enabled: true
+            })
+        ).concat(
+            new BundleAnalyzerPlugin({
+                analyzerMode: 'static',
+                reportFilename: 'BundleReport.html',
+                logLevel: 'info'
             })
         );
     }
