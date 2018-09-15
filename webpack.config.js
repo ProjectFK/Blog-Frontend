@@ -12,7 +12,7 @@ let CleanerPlugin = require('clean-webpack-plugin');
 // Minimize CSS
 let OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
 // Minimize JS
-let UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+let MinifyPlugin = require('babel-minify-webpack-plugin');
 // Inject webp support detection script to every html
 let WebpackSubresourceIntegrityPlugin = require('webpack-subresource-integrity');
 // Bundle analyzer
@@ -40,21 +40,17 @@ let config = {
 
         rules: [
             {
-                // Compile js to es2015 to support more browsers but allow us to use more fancy
-                // stuff.... I hope mike will use this feature
+                // To support more browsers
+                // stuff.... I hope mike will use of this feature
                 test: /\.js$/,
-                use: [
-                    {
-                        loader: 'babel-loader',
-                    }
-                ]
+                use: 'babel-loader'
             },
 
             {
                 // Html-loader for webpack to understand what is HTML....
                 // Work with html-webpack-plugin
                 test: /\.html$/,
-                use: ['html-loader']
+                use: 'html-loader'
             },
 
             {
@@ -69,9 +65,7 @@ let config = {
             {
                 // To parse .vue files
                 test: /\.vue$/,
-                use: [
-                    'vue-loader'
-                ]
+                use: 'vue-loader'
             },
 
             {
@@ -82,8 +76,7 @@ let config = {
                         loader: 'url-loader',
                         options: {
                             limit: 4096,
-                            name: '[name].[hash:5].[ext]',
-                            outputPath: 'image/',
+                            name: '[path]/[name].[hash:5].[ext]',
                         }
                     }
                 ]
@@ -100,21 +93,6 @@ let config = {
         new MiniCssExtractPlugin({
             filename: '[name]/[name].style[chunkhash:5].css'
         }),
-
-        //Directory cleaner
-        new CleanerPlugin(['build']),
-
-        // By using jsdelivr, we can drop the need to request another library for lowing bundle size
-        // Extract vue dependency to cdn
-        // new WebpackCdnPlugin({
-        //     modules: [
-        //         {
-        //             name: 'vue',
-        //             var: 'Vue',
-        //         },
-        //     ],
-        //     prodUrl: 'https://cdn.jsdelivr.net/npm/:name@:version/:path'
-        // }),
 
     ],
 
@@ -151,17 +129,17 @@ module.exports = (env, argv) => {
 
     if (isDev) {
         config.mode = 'development';
-        config.output.path = path.resolve(__dirname, 'build');
+        let pathName = 'build';
+        config.output.path = path.resolve(__dirname, pathName);
+        config.plugins = config.plugins.concat(new CleanerPlugin([pathName]))
     } else {
         config.mode = 'production';
-        config.output.path = path.resolve(__dirname, 'dist');
-        config.output.publicPath = `https://cdn.jsdelivr.net/gh/ProjectFK/Blog-Frontend@${version}/dist/`;
+        let pathName = 'dist';
+        config.output.path = path.resolve(__dirname, pathName);
+        config.output.publicPath = `https://cdn.jsdelivr.net/gh/ProjectFK/Blog-Frontend@${version}/${pathName}/`;
         config.optimization = {
             minimizer: [
-                new UglifyJsPlugin({
-                    cache: true,
-                    parallel: true,
-                }),
+                new MinifyPlugin(),
                 new OptimizeCSSAssetsPlugin()
             ]
         };
@@ -176,7 +154,9 @@ module.exports = (env, argv) => {
                 reportFilename: 'BundleReport.html',
                 logLevel: 'info'
             })
-        );
+        ).concat(
+            new CleanerPlugin([pathName])
+        )
     }
 
     return config;
