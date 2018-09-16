@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "webpack-dev-server",
     "build": "webpack",
-    "build:prod": "webpack -p"
+    "build:prod": "webpack -p",
+    "build:debug": "node %NODE_DEBUG_OPTION% debug.js"
   },
   "repository": {
     "type": "git",
