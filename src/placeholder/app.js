@@ -1,2 +1,1 @@
-//Empty
-module.exports = 'glue';
+'glue'; // this is a glue file

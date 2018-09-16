@@ -17,6 +17,7 @@ let MinifyPlugin = require('babel-minify-webpack-plugin');
 let WebpackSubresourceIntegrityPlugin = require('webpack-subresource-integrity');
 // Bundle analyzer
 let BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+let NoGlue = require('./no-glue-plugin');
 
 let config = {
 
@@ -26,7 +27,8 @@ let config = {
     // Logic below will automatically add HTMLPlugin about index.html within the same folder if the file exists
     entry: {
         login: './login/app.js',
-        publish: './publish/app.js'
+        publish: './publish/app.js',
+        placeholder: './placeholder/app.js',
     },
 
     output: {
@@ -70,13 +72,14 @@ let config = {
 
             {
                 // Inline svg which has the size under 4096
-                test: /\.(jpe?g|png|webp|svg)$/,
+                test: /\.(jpe?g|png|webp|svg|gif)$/,
                 use: [
                     {
-                        loader: 'url-loader',
+                        //Change back to file-loader in case it's no-glued
+                        loader: 'file-loader',
                         options: {
-                            limit: 4096,
-                            name: '[path]/[name].[hash:5].[ext]',
+                            // Path includes "/" already
+                            name: '[path][name].[hash:5].[ext]',
                         }
                     }
                 ]
@@ -93,6 +96,8 @@ let config = {
         new MiniCssExtractPlugin({
             filename: '[name]/[name].style[chunkhash:5].css'
         }),
+
+        new NoGlue()
 
     ],
 
@@ -125,7 +130,7 @@ config.plugins = HTMLPlugins.concat(config.plugins);
 
 module.exports = (env, argv) => {
 
-    const isDev = !(argv === undefined || argv.mode === 'production');
+    const isDev = argv === undefined || !(argv.mode === 'production');
 
     if (isDev) {
         config.mode = 'development';
