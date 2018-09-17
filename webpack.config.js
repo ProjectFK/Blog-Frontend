@@ -118,6 +118,7 @@ module.exports = (env, argv) => {
         let basePath = 'dist';
         let pathName = basePath + '/assets';
         let htmlPath = basePath + '/htmls';
+        let reportPath = 'reports';
         config.output.path = path.resolve(__dirname, pathName);
         config.output.html = htmlPath;
         config.output.publicPath = `https://cdn.jsdelivr.net/gh/ProjectFK/Blog-Frontend@${version}/${pathName}/`;
@@ -135,11 +136,13 @@ module.exports = (env, argv) => {
         ).concat(
             new BundleAnalyzerPlugin({
                 analyzerMode: 'static',
-                reportFilename: path.resolve(__dirname, basePath, 'BundleReport.html'),
+                reportFilename: path.resolve(__dirname, reportPath, 'BundleReport.html'),
                 logLevel: 'info'
             })
         ).concat(
             new CleanerPlugin([basePath])
+        ).concat(
+            new CleanerPlugin([reportPath])
         )
     }
 
