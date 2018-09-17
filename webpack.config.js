@@ -103,31 +103,6 @@ let config = {
 
 };
 
-// html-webpack-plugin automatically added by entry name
-// Storage for auto-generated HTML Plugins
-let HTMLPlugins = [];
-
-// Discover index.html by config.entry
-for (let entryName in config.entry) {
-    // For the sake of not having a warming!
-    if (config.entry.hasOwnProperty(entryName)) {
-        let contentPath = path.dirname(config.entry[entryName]) + "/index.html";
-        let b = fs.existsSync(config.context + '/' + contentPath);
-        let consoleLog =
-            ['Entry', entryName, 'index.html', b ? 'loaded' : 'missing', 'from content path:', contentPath].join(' ');
-        console.log(consoleLog);
-        if (b)
-            HTMLPlugins = HTMLPlugins.concat(new HtmlWebpackPlugin({
-                filename: contentPath,
-                template: contentPath,
-                chunks: [entryName],
-            }));
-    }
-}
-
-// Combine both auto-generated HTMLPlugins with actual plugins
-config.plugins = HTMLPlugins.concat(config.plugins);
-
 module.exports = (env, argv) => {
 
     const isDev = argv === undefined || !(argv.mode === 'production');
@@ -139,8 +114,11 @@ module.exports = (env, argv) => {
         config.plugins = config.plugins.concat(new CleanerPlugin([pathName]))
     } else {
         config.mode = 'production';
-        let pathName = 'dist';
+        let basePath = 'dist';
+        let pathName = basePath + '/assets';
+        let htmlPath = basePath + '/htmls';
         config.output.path = path.resolve(__dirname, pathName);
+        config.output.html = htmlPath;
         config.output.publicPath = `https://cdn.jsdelivr.net/gh/ProjectFK/Blog-Frontend@${version}/${pathName}/`;
         config.optimization = {
             minimizer: [
@@ -156,13 +134,55 @@ module.exports = (env, argv) => {
         ).concat(
             new BundleAnalyzerPlugin({
                 analyzerMode: 'static',
-                reportFilename: 'BundleReport.html',
+                reportFilename: path.resolve(__dirname, basePath, 'BundleReport.html'),
                 logLevel: 'info'
             })
         ).concat(
-            new CleanerPlugin([pathName])
+            new CleanerPlugin([basePath])
         )
     }
+
+// html-webpack-plugin automatically added by entry name
+// Storage for auto-generated HTML Plugins
+    let HTMLPlugins = [];
+
+// Discover index.html by config.entry
+    for (let entryName in config.entry) {
+        // For the sake of not having a warming!
+        if (config.entry.hasOwnProperty(entryName)) {
+            let contentPath = path.dirname(config.entry[entryName]) + "/index.html";
+            let outputPath;
+            if (config.output.html) {
+                outputPath = path.resolve(__dirname, config.output.html, entryName, "index.html")
+            } else {
+                outputPath = contentPath;
+            }
+            let entryExists = fs.existsSync(config.context + '/' + contentPath);
+            let consoleLog =
+                [
+                    'Entry',
+                    entryName,
+                    'index.html',
+                    entryExists ? 'loaded' : 'missing',
+                    'from content path:',
+                    contentPath
+                ]
+                    .join(' ');
+            console.log(consoleLog);
+            if (entryExists)
+                HTMLPlugins = HTMLPlugins.concat(new HtmlWebpackPlugin({
+                    filename: outputPath,
+                    template: contentPath,
+                    chunks: [entryName],
+                }));
+        }
+    }
+
+    if (config.output.html) delete config.output.html;
+
+// Combine both auto-generated HTMLPlugins with actual plugins
+    config.plugins = HTMLPlugins.concat(config.plugins);
+
 
     return config;
 };
