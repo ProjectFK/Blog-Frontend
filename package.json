@@ -1,6 +1,6 @@
 {
   "name": "kcibald-blog",
-  "version": "0.0.0",
+  "version": "0.7.0",
   "description": "Blog project for kcibald",
   "main": "index.js",
   "scripts": {
@@ -30,7 +30,6 @@
     "mini-css-extract-plugin": "^0.4.1",
     "optimize-css-assets-webpack-plugin": "^5.0.0",
     "style-loader": "^0.23.0",
-    "uglify-js": "^3.4.6",
     "url-loader": "^1.0.1",
     "vue-loader": "^15.2.4",
     "vue-template-compiler": "^2.5.16",

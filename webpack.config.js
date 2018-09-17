@@ -29,6 +29,7 @@ let config = {
         login: './login/app.js',
         publish: './publish/app.js',
         placeholder: './placeholder/app.js',
+        '404': "./404/app.js",
     },
 
     output: {

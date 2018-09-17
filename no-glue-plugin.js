@@ -10,6 +10,7 @@ let a = class NoGluePlugin {
 
         compiler.hooks.compilation.tap('no-glue-plugin', (compilation) => {
 
+            if (!compilation.hooks.htmlWebpackPluginAlterAssetTags) return;
             compilation.hooks.htmlWebpackPluginAlterAssetTags.tapAsync(
                 'no-glue-plugin',
                 (data, cb) => {
@@ -54,7 +55,7 @@ let a = class NoGluePlugin {
 
                         for (let i = 0; i< hitedNames.length; i++) {
                             if (compilation.assets.hasOwnProperty(hitedNames[i])) {
-                                console.log(`removed ${hitedNames[i]} from webpack assets`);
+                                console.log(`glue: removed ${hitedNames[i]} from webpack assets which was in chunk ${currentChunkJsName}`);
                                 delete compilation.assets[hitedNames[i]];
                             }
                         }
@@ -79,4 +80,5 @@ let a = class NoGluePlugin {
     }
 
 };
+
 module.exports = a;

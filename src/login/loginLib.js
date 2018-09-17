@@ -1,5 +1,5 @@
 const config = {
-    loginurl: '//localhost:8000/login',
+    loginurl: '//www.kcibald.com/login',
     uploadPayload: {
         cache: 'no-cache',
         method: 'post',
@@ -7,8 +7,7 @@ const config = {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
         },
-        //TODO: SAME-ORIGIN IN PROUDCTION
-        mode: 'cors'
+        mode: 'same-origin'
     }
 };
 
@@ -21,6 +20,7 @@ const exp = {
             return /^(?=.*?[a-z])(?=.*?[0-9]).{8,20}$/.test(password);
         }
     },
+
     /**
      * When login is successful, server will send 301, since fetch is configured to follow redirection,
      * only unsuccessful login attempt will be processed
