@@ -26,8 +26,8 @@ let config = {
     // Well... Entries
     // Logic below will automatically add HTMLPlugin about index.html within the same folder if the file exists
     entry: {
-        login: './login/app.js',
-        publish: './publish/app.js',
+        // login: './login/app.js',
+        // publish: './publish/app.js',
         placeholder: './placeholder/app.js',
         '404': "./404/app.js",
     },
