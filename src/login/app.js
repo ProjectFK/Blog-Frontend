@@ -1,6 +1,6 @@
 import './style.css';
 
-const loginlib = require('./loginLib');
+const sdk = require('../lib/KCIbald-blog-SDK');
 
 let siteKey = '6LepWGkUAAAAAOuDkXsDYx5ohu-kas5-As7x047v';
 
@@ -16,14 +16,20 @@ document.onkeyup = (keyEvent) => {
         document.getElementById('login').click();
 };
 
-/**
- * @param serverResponse when server says it's an invalidate response
- * @param connectionException when there's connection error
- */
-function loginRequestFailed(serverResponse, connectionException) {
+function loginRequestFailed(failure) {
 //    Exception logic
-    console.log(serverResponse);
-    console.log(connectionException);
+    console.log(failure);
+}
+
+function loginException(exception) {
+    console.log(exception);
+}
+
+function reset() {
+}
+
+function loginSuccess(value: sdk.datastructures.Result) {
+    window.location.replace('/');
 }
 
 function startLogin(token) {
@@ -35,20 +41,22 @@ function startLogin(token) {
         console.log(`login with user: ${username}, password: ${password}`);
         console.log(`recaptcha token: ${token}`);
 
-        if (!loginlib.validator.username(username)) {
+        if (!sdk.validators.username(username)) {
             console.log(`user name: ${username} is invalidate`);
             return
         }
 
-        if (!loginlib.validator.password(password)) {
+        if (!sdk.validators.password(password)) {
             console.log(`password: ${username} is invalidate`);
             return
         }
 
-        loginlib
-            .attemptLogin(username, password, token)
-            .then((value => loginRequestFailed(value, null)))
-            .catch(exception => loginRequestFailed(null, exception))
+        sdk
+            .loginApi.attemptLogin(username, password, token)
+            .then(value => value.success ? loginSuccess(value) : loginRequestFailed(value))
+            .catch(exception => loginException(exception))
+            .finally(_ => reset())
+
 
     } catch (e) {
         //Recaptcha do not handle error from our callable

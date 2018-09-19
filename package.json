@@ -1,6 +1,6 @@
 {
   "name": "kcibald-blog",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "Blog project for kcibald",
   "main": "index.js",
   "scripts": {
