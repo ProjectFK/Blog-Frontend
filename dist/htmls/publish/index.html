@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang=en>
+<head>
+    <script src=https://unpkg.com/wangeditor@3.1.1/release/wangEditor.js></script>
+    <link rel=stylesheet href=https://use.fontawesome.com/releases/v5.2.0/css/all.css
+          integrity=sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ crossorigin=anonymous>
+    <meta charset=UTF-8>
+    <title>BLOG | KCIBALD BLOG</title>
+    <link href="https://fonts.googleapis.com/css?family=Russo+One" rel=stylesheet>
+    <link href="https://cdn.jsdelivr.net/gh/ProjectFK/Blog-Frontend@0.7.0/dist/assets/publish/publish.styled5b79.css"
+          rel="stylesheet" integrity="sha256-x1354ftrKohdOKamocm/G59CecEPp9c61oRZ3unP7JE=" crossorigin="anonymous">
+</head>
+<body>
+<div class=top><span id=temp>KCIBALD LOGO</span><span id=bloghead> | Blog</span> <span id=tops> <button>Home</button> <button>Web</button> <button>Daily</button> <button>About</button> </span>
+    <button id=login><i class="far fa-user"></i> login</button>
+</div>
+<div class=content>
+    <div class=blogtitle><input type=text placeholder="Title here" id=blogtitle></div>
+    <div id=editor></div>
+    <script>var E = window.wangEditor, editor = new E("#editor");
+    editor.customConfig.uploadImgShowBase64 = !0, editor.customConfig.menus = ["bold", "italic", "underline", "strikeThrough", "foreColor", "backColor", "link", "list", "justify", "quote", "image", "code", "undo", "redo"], editor.create()</script>
+    <script></script>
+    <div id=publish>
+        <button id=publishbut><img id=publishpic
+                                   src=https://cdn.jsdelivr.net/gh/ProjectFK/Blog-Frontend@0.7.0/dist/assets/publish/publish.9129a.svg
+                                   alt=publish!!!/></button>
+    </div>
+</div>
+<script type="text/javascript"
+        src="https://cdn.jsdelivr.net/gh/ProjectFK/Blog-Frontend@0.7.0/dist/assets/publish/publish.bundled5b79.js"
+        integrity="sha256-r9w2mi1m+WgGx+QzRCuI7tVAnvNkqd2XoaEzXo4J4U8=" crossorigin="anonymous"></script>
+</body>
+</html>
