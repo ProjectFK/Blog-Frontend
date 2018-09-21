@@ -1,6 +1,15 @@
-let exp = {};
+const config = require('./SDK-Config');
+
+const exp = {};
 
 ////////////////////////////BASIC DATA STRUCTURE////////////////////////////////
+
+/**
+ {
+        "id": 1,
+        "username": "someone"
+   }
+ */
 
 class User {
     id: number;
@@ -12,29 +21,57 @@ class User {
     }
 }
 
+/**
+
+ {
+        "id": 1,
+        "author": {
+            "id": 1,
+            "username": "someone"
+        },
+        "title": "loool",
+        "content": "",
+        "modifyDate": "2018-09-20T18:51:00.190972",
+        "createdDate": "2018-09-20T18:51:00.190972",
+        "tag": "tech"
+    }
+
+ */
+
 class Blog {
     id: number;
-    content: string;
     author: User;
+    title: string;
+    content: string;
     modify_date: Date;
     created_date: Date;
-    tag: string;
+    tag: Tag;
 
-    constructor(id: number, content: string, author: User, modify_date: string, created_date: string, tag: string) {
-        this.id = id;
+    constructor(
+        content: string,
+        title: String,
+        tag: Tag
+    ) {
         this.content = content;
-        this.author = author;
-        this.modify_date = new Date(modify_date);
-        this.created_date = new Date(created_date);
+        this.title = title;
         this.tag = tag;
     }
 
 }
 
+type Tag = "life" | "tech";
+
+/**
+ {
+        "state": "success",
+        "result": {}
+    }
+ */
 interface Result<T> extends RawResponseContainer {
     content?: T;
     success: boolean;
     exception?: ExceptionDescriber;
+    location?: String;
 }
 
 class ExceptionDescriber {
@@ -97,25 +134,28 @@ function isInternalError(value: Result): boolean {
     return value.exception ? value.exception.isInternalError : false;
 }
 
-///////////////////////////VALIDATORS//////////////////////////////////////////////
+function throwIfNotFound(result, response) {
+    if (!result.success && (response.status === 404 || result.body.message === 'Requested information not found'))
+        throw NotFoundException(response.exception_msg);
+}
 
-let doValidate = false;
+///////////////////////////VALIDATORS//////////////////////////////////////////////
 
 class validators {
     static username(username: String) {
-        return !doValidate || typeof username === 'string' && !(username.length > 20 || username.length < 2);
+        return !config.doValidate || typeof username === 'string' && !(username.length > 20 || username.length < 2);
     }
 
     static userId(id: number) {
-        return !doValidate || typeof id === 'number' && id > 0;
+        return !config.doValidate || typeof id === 'number' && id > 0;
     }
 
     static password(password: String) {
-        return !doValidate || typeof password === 'string' && /^(?=.*?[a-z])(?=.*?[0-9]).{8,20}$/.test(password);
+        return !config.doValidate || typeof password === 'string' && /^(?=.*?[a-z])(?=.*?[0-9]).{8,20}$/.test(password);
     }
 
     static postId(id: number) {
-        return !doValidate || typeof id === 'number' && id > 0;
+        return !config.doValidate || typeof id === 'number' && id > 0;
     }
 }
 
@@ -136,16 +176,9 @@ class loginAPIs {
 
         let response = await fetch(
             'api/login',
-            {
-                cache: 'no-cache',
-                method: 'post',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(payload),
-                mode: 'same-origin'
-            }
+            Object.assign(
+                config.fetchRequestConfigs('get', payload),
+            )
         );
 
         return extractResult(response);
@@ -157,29 +190,87 @@ exp.loginApi = loginAPIs;
 //////////////////////////////USER APIS////////////////////////////////////////////
 
 class UserAPI {
-    static async retrieveUserDataByID(id: number | String): Result<User> {
-        if ((!typeof id === 'number' && validators.userId(id)) || (!typeof id === 'string' && validators.username(id)))
+    static async retrieveUserDataByID(id: number | String): Promise<Result<User>> {
+        if ((validators.userId(id)) || (validators.username(id)))
             throw new TypeError(`given id: ${id} do not match requirements`);
+
         let response = await fetch(
             `api/user/${id}`,
-            {
-                cache: 'no-cache',
-                method: 'get',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                mode: 'same-origin'
-            }
+            config.fetchRequestConfigs(),
         );
 
         let result = extractResult(response);
 
-        if (response.status === 404 || result.body.message === 'Requested information not found')
-            throw NotFoundException(response.exception_msg);
+        throwIfNotFound(result, response);
 
         return result;
     }
 }
 
 module.exports = exp;
+
+///////////////////////////////////////////////////////////////////////////////////
+
+class BlogAPI {
+    static async retrieveAllBlogs(amount: number): Promise<Result<Array<Blog>>> {
+        return await fetch(
+            'api/blog/',
+            config.fetchRequestConfigs(),
+        );
+    }
+
+    static async retrieveBlogDataByID(id: number): Promise<Result<Blog>> {
+        if (validators.postId(id))
+            throw new TypeError(`given id: ${id} do not match requirements`);
+
+        let response = await fetch(
+            `api/blog/${id}`,
+            config.fetchRequestConfigs(),
+        );
+
+        let result = extractResult(response);
+
+        throwIfNotFound(result);
+
+        return result;
+    }
+
+    /**
+     * @param blog
+     *  Example:
+     *  {
+            "content": "",
+            "title": "loool",
+            "tag": "tech"
+        }
+
+     * @returns {Promise<void>}
+     * Example:
+     *  {
+            "state": "success",
+            "state_message": "created",
+            "location": "/blog/1",
+            "result": {
+                "id": 1,
+                "author": {
+                    "id": 1,
+                    "username": "someone"
+                },
+                "title": "loool",
+                "content": "",
+                "modifyDate": "2018-09-20T18:51:00.1909715",
+                "createdDate": "2018-09-20T18:51:00.1909715",
+                "tag": "tech"
+            }
+        }
+     */
+    static async uploadBlog(blog: Blog): Promise<Result<Blog>> {
+        let response = await fetch(
+            'api/blog/',
+            config.fetchRequestConfigs('get', blog)
+        );
+
+        return extractResult(response);
+    }
+
+}
