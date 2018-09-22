@@ -9,6 +9,7 @@ const basicRequStru = {
 
 module.exports = {
     doValidate: false,
+    debugOutput: true,
     fetchRequestConfigs(method: string = 'get', body: any) {
         let preAppended = Object.assign(
             {
@@ -17,8 +18,12 @@ module.exports = {
             basicRequStru
         );
 
-        if (body)
+        if (body) {
             preAppended.body = JSON.stringify(payload);
+            if (debugOutput) {
+                console.debug(`[network] fetch config generate with body: ${preAppended.body}`);
+            }
+        }
 
         return preAppended;
     },

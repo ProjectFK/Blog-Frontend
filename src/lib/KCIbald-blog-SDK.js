@@ -47,6 +47,12 @@ class Blog {
     created_date: Date;
     tag: Tag;
 
+    /**
+     * Use this constructor for construct blog object for uploading
+     * @param content
+     * @param title
+     * @param tag
+     */
     constructor(
         content: string,
         title: String,
@@ -55,6 +61,12 @@ class Blog {
         this.content = content;
         this.title = title;
         this.tag = tag;
+    }
+
+    static constructUpdateBlogObj(id: number, content: string, title: string, tag: Tag): Blog {
+        let blog = new Blog(content, title, tag);
+        blog.id = id;
+        return blog;
     }
 
 }
@@ -71,11 +83,13 @@ interface Result<T> extends RawResponseContainer {
     content?: T;
     success: boolean;
     exception?: ExceptionDescriber;
-    location?: String;
+    location?: string;
+    state_message: string;
 }
 
 class ExceptionDescriber {
-    isInternalError: boolean | true;
+    isInternalError: boolean = false;
+    isPermissionDenied: boolean = false;
     exception_message: string;
 }
 
@@ -100,6 +114,14 @@ class NotFoundException extends Error implements RawResponseContainer {
     }
 }
 
+class ForbiddenException extends Error implements RawResponseContainer {
+    constructor(message, response: Result) {
+        super(message);
+        this.rawResponse = response.rawResponse;
+        this.body = response.body;
+    }
+}
+
 
 //////////////////////////////HELPER FUNCTIONS/////////////////////////////////////
 
@@ -114,18 +136,25 @@ async function extractResult(rawResponse: Response): Result {
         body: body,
     };
 
-    if (value.success) return value;
+    if (value.success) {
+        if (!value.state_message) value.state_message = 'success';
+        return value;
+    }
 
-    value.exception = {};
+    value.exception = new ExceptionDescriber();
 
     if (body.state_message === 'exception') {
         value.exception.exception_message = body.exception_msg;
     }
 
     if (rawResponse.status === 500
-        || (value.success && body.state_message.toLowerCase().includes('internal error'))) {
+        || (!value.success && body.state_message === 'Internal Error')) {
         value.exception.isInternalError = true;
     }
+
+    if (rawResponse.status === 403 || !value.success)
+        if (value.message === 'Forbidden' || value.message === 'Not Authorized')
+            throw ForbiddenException(value.message);
 
     return value;
 }
@@ -211,6 +240,11 @@ module.exports = exp;
 
 ///////////////////////////////////////////////////////////////////////////////////
 
+function inspectBlogObj(blog: Blog) {
+    if (!(blog.title && blog.content && blog.tag))
+        throw TypeError('Unsatisfied object, something is missing! Use constructor!')
+}
+
 class BlogAPI {
     static async retrieveAllBlogs(amount: number): Promise<Result<Array<Blog>>> {
         return await fetch(
@@ -236,7 +270,7 @@ class BlogAPI {
     }
 
     /**
-     * @param blog
+     * @param blog created via Blog.uploadBlogConstructor
      *  Example:
      *  {
             "content": "",
@@ -265,12 +299,27 @@ class BlogAPI {
         }
      */
     static async uploadBlog(blog: Blog): Promise<Result<Blog>> {
+        if (blog.id || blog.author)
+            throw TypeError('upload blog should not contain id or author, construct it using default constructor');
+        inspectBlogObj(blog);
         let response = await fetch(
             'api/blog/',
             config.fetchRequestConfigs('get', blog)
         );
 
         return extractResult(response);
+    }
+
+    static async updateBlog(target: Blog): Promise<Result> {
+        if (!blog.id || blog.author)
+            throw TypeError('upload blog should contain id but without author, construct it with Blog.constructUpdateBlogObj');
+        inspectBlogObj(target);
+        let response = await fetch(
+            `api/blog/${target.id}`,
+            config.fetchRequestConfigs('put', target)
+        );
+
+        return extractResult(response)
     }
 
 }
