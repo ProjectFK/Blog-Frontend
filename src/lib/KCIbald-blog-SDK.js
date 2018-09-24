@@ -63,12 +63,6 @@ class Blog {
         this.tag = tag;
     }
 
-    static constructUpdateBlogObj(id: number, content: string, title: string, tag: Tag): Blog {
-        let blog = new Blog(content, title, tag);
-        blog.id = id;
-        return blog;
-    }
-
 }
 
 type Tag = "life" | "tech";
@@ -88,8 +82,13 @@ interface Result<T> extends RawResponseContainer {
 }
 
 class ExceptionDescriber {
-    isInternalError: boolean = false;
-    isPermissionDenied: boolean = false;
+    isInternalError: boolean;
+    isPermissionDenied: boolean;
+
+    constructor() {
+        this.isInternalError = false;
+        this.isPermissionDenied = false;
+    }
     exception_message: string;
 }
 
@@ -246,7 +245,7 @@ function inspectBlogObj(blog: Blog) {
 }
 
 class BlogAPI {
-    static async retrieveAllBlogs(amount: number): Promise<Result<Array<Blog>>> {
+    static async retrieveAllBlogs(): Promise<Result<Array<Blog>>> {
         return await fetch(
             'api/blog/',
             config.fetchRequestConfigs(),
@@ -270,7 +269,7 @@ class BlogAPI {
     }
 
     /**
-     * @param blog created via Blog.uploadBlogConstructor
+     * @param blog created via Blog's constructor (only content, title, tag is filled)
      *  Example:
      *  {
             "content": "",
@@ -310,9 +309,7 @@ class BlogAPI {
         return extractResult(response);
     }
 
-    static async updateBlog(target: Blog): Promise<Result> {
-        if (!blog.id || blog.author)
-            throw TypeError('upload blog should contain id but without author, construct it with Blog.constructUpdateBlogObj');
+    static async updateBlog(id: number, target: Blog): Promise<Result> {
         inspectBlogObj(target);
         let response = await fetch(
             `api/blog/${target.id}`,
@@ -322,4 +319,18 @@ class BlogAPI {
         return extractResult(response)
     }
 
+    static async deleteBlog(id: number): Promise<Result> {
+        if (!validators.postId(id))
+            throw new TypeError(`given id: ${id} do not match requirements`);
+
+        let response = await fetch(
+            `api/blog/${id}`,
+            config.fetchRequestConfigs('delete')
+        );
+
+        return extractResult(response)
+    }
+
 }
+
+exp.blogAPI = BlogAPI;
