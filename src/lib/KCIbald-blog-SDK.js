@@ -204,9 +204,7 @@ class loginAPIs {
 
         let response = await fetch(
             'api/login',
-            Object.assign(
-                config.fetchRequestConfigs('get', payload),
-            )
+            config.fetchRequestConfigs('post', payload),
         );
 
         return extractResult(response);
