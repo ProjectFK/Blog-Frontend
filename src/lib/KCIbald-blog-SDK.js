@@ -89,6 +89,7 @@ class ExceptionDescriber {
         this.isInternalError = false;
         this.isPermissionDenied = false;
     }
+
     exception_message: string;
 }
 
@@ -121,10 +122,29 @@ class ForbiddenException extends Error implements RawResponseContainer {
     }
 }
 
+class InternalError extends Error {
+    response: Response;
+
+    constructor(message, response: Response) {
+        super(message);
+        this.response = response;
+        try {
+            console.error(this);
+            let body = response.body.getReader().read();
+            console.error("Response body: " + body)
+        } catch (e) {
+        }
+    }
+}
+
 
 //////////////////////////////HELPER FUNCTIONS/////////////////////////////////////
 
-async function extractResult(rawResponse: Response): Result {
+async function extractResultJson(rawResponse: Response): Result {
+
+    let contentType = rawResponse.headers.get("content-type");
+    if (!contentType || !contentType.toLowerCase().includes("json"))
+        throw InternalError("invalid server response, expect content type json, received: " + contentType);
 
     let body = await rawResponse.json();
 
@@ -187,7 +207,6 @@ class validators {
     }
 }
 
-exp.validators = validators;
 
 /////////////////////////LOGIN APIS////////////////////////////////////////////////
 
@@ -207,11 +226,10 @@ class loginAPIs {
             config.fetchRequestConfigs('post', payload),
         );
 
-        return extractResult(response);
+        return extractResultJson(response);
     }
 }
 
-exp.loginApi = loginAPIs;
 
 //////////////////////////////USER APIS////////////////////////////////////////////
 
@@ -225,15 +243,13 @@ class UserAPI {
             config.fetchRequestConfigs(),
         );
 
-        let result = extractResult(response);
+        let result = extractResultJson(response);
 
         throwIfNotFound(result, response);
 
         return result;
     }
 }
-
-module.exports = exp;
 
 ///////////////////////////////////////////////////////////////////////////////////
 
@@ -259,7 +275,7 @@ class BlogAPI {
             config.fetchRequestConfigs(),
         );
 
-        let result = extractResult(response);
+        let result = extractResultJson(response);
 
         throwIfNotFound(result);
 
@@ -304,7 +320,7 @@ class BlogAPI {
             config.fetchRequestConfigs('get', blog)
         );
 
-        return extractResult(response);
+        return extractResultJson(response);
     }
 
     static async updateBlog(id: number, target: Blog): Promise<Result> {
@@ -314,7 +330,7 @@ class BlogAPI {
             config.fetchRequestConfigs('put', target)
         );
 
-        return extractResult(response)
+        return extractResultJson(response)
     }
 
     static async deleteBlog(id: number): Promise<Result> {
@@ -326,9 +342,13 @@ class BlogAPI {
             config.fetchRequestConfigs('delete')
         );
 
-        return extractResult(response)
+        return extractResultJson(response)
     }
 
 }
 
+exp.validators = validators;
+exp.loginApi = loginAPIs;
 exp.blogAPI = BlogAPI;
+
+module.exports = exp;
