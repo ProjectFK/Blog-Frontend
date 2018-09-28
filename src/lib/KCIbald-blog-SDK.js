@@ -55,7 +55,7 @@ class Blog {
      */
     constructor(
         content: string,
-        title: String,
+        title: string,
         tag: Tag
     ) {
         this.content = content;
@@ -144,7 +144,7 @@ async function extractResultJson(rawResponse: Response): Result {
 
     let contentType = rawResponse.headers.get("content-type");
     if (!contentType || !contentType.toLowerCase().includes("json"))
-        throw InternalError("invalid server response, expect content type json, received: " + contentType);
+        throw new InternalError("invalid server response, expect content type json, received: " + contentType);
 
     let body = await rawResponse.json();
 
@@ -182,15 +182,15 @@ function isInternalError(value: Result): boolean {
     return value.exception ? value.exception.isInternalError : false;
 }
 
-function throwIfNotFound(result, response) {
-    if (!result.success && (response.status === 404 || result.body.message === 'Requested information not found'))
-        throw NotFoundException(response.exception_msg);
+function throwIfNotFound(result) {
+    if (!result.success && (result.rawResponse.status === 404 || result.body.message === 'Requested information not found'))
+        throw NotFoundException(result.rawResponse.exception_msg);
 }
 
 ///////////////////////////VALIDATORS//////////////////////////////////////////////
 
 class validators {
-    static username(username: String) {
+    static username(username: string) {
         return !config.doValidate || typeof username === 'string' && !(username.length > 20 || username.length < 2);
     }
 
@@ -198,7 +198,7 @@ class validators {
         return !config.doValidate || typeof id === 'number' && id > 0;
     }
 
-    static password(password: String) {
+    static password(password: string) {
         return !config.doValidate || typeof password === 'string' && /^(?=.*?[a-z])(?=.*?[0-9]).{8,20}$/.test(password);
     }
 
@@ -234,7 +234,7 @@ class loginAPIs {
 //////////////////////////////USER APIS////////////////////////////////////////////
 
 class UserAPI {
-    static async retrieveUserDataByID(id: number | String): Promise<Result<User>> {
+    static async retrieveUserDataByID(id: number | string): Promise<Result<User>> {
         if ((validators.userId(id)) || (validators.username(id)))
             throw new TypeError(`given id: ${id} do not match requirements`);
 
@@ -245,7 +245,7 @@ class UserAPI {
 
         let result = extractResultJson(response);
 
-        throwIfNotFound(result, response);
+        throwIfNotFound(result);
 
         return result;
     }
@@ -260,10 +260,12 @@ function inspectBlogObj(blog: Blog) {
 
 class BlogAPI {
     static async retrieveAllBlogs(): Promise<Result<Array<Blog>>> {
-        return await fetch(
+        let response = await fetch(
             'api/blog/',
             config.fetchRequestConfigs(),
         );
+
+        return extractResultJson(response);
     }
 
     static async retrieveBlogDataByID(id: number): Promise<Result<Blog>> {
