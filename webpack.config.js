@@ -44,7 +44,7 @@ let config = {
         rules: [
             {
                 // To support more browsers
-                // stuff.... I hope mike will use of this feature
+                // I hope mike will make use of this feature
                 test: /\.js$/,
                 use: 'babel-loader'
             },

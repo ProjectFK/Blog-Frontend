@@ -349,6 +349,11 @@ class BlogAPI {
 
 }
 
+exp.dataStructure = {
+    User: User,
+    Blog: Blog,
+};
+
 exp.validators = validators;
 exp.loginApi = loginAPIs;
 exp.blogAPI = BlogAPI;
