@@ -84,10 +84,12 @@ interface Result<T> extends RawResponseContainer {
 class ExceptionDescriber {
     isInternalError: boolean;
     isPermissionDenied: boolean;
+    isNotFound: boolean;
 
     constructor() {
         this.isInternalError = false;
         this.isPermissionDenied = false;
+        this.isNotFound = false;
     }
 
     exception_message: string;
@@ -105,15 +107,6 @@ class IllegalArgumentException extends Error implements RawResponseContainer {
         this.body = response.body;
     }
 }
-
-class NotFoundException extends Error implements RawResponseContainer {
-    constructor(message, response: Result) {
-        super(message);
-        this.rawResponse = response.rawResponse;
-        this.body = response.body;
-    }
-}
-
 class ForbiddenException extends Error implements RawResponseContainer {
     constructor(message, response: Result) {
         super(message);
@@ -121,30 +114,22 @@ class ForbiddenException extends Error implements RawResponseContainer {
         this.body = response.body;
     }
 }
-
-class InternalError extends Error {
-    response: Response;
-
-    constructor(message, response: Response) {
-        super(message);
-        this.response = response;
-        try {
-            console.error(this);
-            let body = response.body.getReader().read();
-            console.error("Response body: " + body)
-        } catch (e) {
-        }
-    }
-}
-
-
 //////////////////////////////HELPER FUNCTIONS/////////////////////////////////////
 
 async function extractResultJson(rawResponse: Response): Result {
 
     let contentType = rawResponse.headers.get("content-type");
-    if (!contentType || !contentType.toLowerCase().includes("json"))
-        throw new InternalError("invalid server response, expect content type json, received: " + contentType);
+    if (!contentType || !contentType.toLowerCase().includes("json")) {
+        let value: Result = {
+            success: false,
+            content: null,
+            exception: null
+        };
+        value.exception = new ExceptionDescriber();
+        value.exception.isInternalError = true;
+        value.exception.exception_message = `invalid server response, expect content type json, received: ${contentType}`;
+        return value;
+    }
 
     let body = await rawResponse.json();
 
@@ -171,9 +156,15 @@ async function extractResultJson(rawResponse: Response): Result {
         value.exception.isInternalError = true;
     }
 
-    if (rawResponse.status === 403 || !value.success)
+    if (rawResponse.status === 403 && !value.success) {
+        value.exception.isPermissionDenied = true;
         if (value.message === 'Forbidden' || value.message === 'Not Authorized')
             throw ForbiddenException(value.message);
+    }
+
+    if (rawResponse.status === 404 && !value.success) {
+        value.exception.isNotFound = true;
+    }
 
     return value;
 }
@@ -181,12 +172,6 @@ async function extractResultJson(rawResponse: Response): Result {
 function isInternalError(value: Result): boolean {
     return value.exception ? value.exception.isInternalError : false;
 }
-
-function throwIfNotFound(result) {
-    if (!result.success && (result.rawResponse.status === 404 || result.body.message === 'Requested information not found'))
-        throw NotFoundException(result.rawResponse.exception_msg);
-}
-
 ///////////////////////////VALIDATORS//////////////////////////////////////////////
 
 class validators {
@@ -243,11 +228,7 @@ class UserAPI {
             config.fetchRequestConfigs(),
         );
 
-        let result = extractResultJson(response);
-
-        throwIfNotFound(result);
-
-        return result;
+        return extractResultJson(response);
     }
 }
 
@@ -270,18 +251,14 @@ class BlogAPI {
 
     static async retrieveBlogDataByID(id: number): Promise<Result<Blog>> {
         if (validators.postId(id))
-            throw new TypeError(`given id: ${id} do not match requirements`);
+            throw new IllegalArgumentException(`given id: ${id} do not match requirements`);
 
         let response = await fetch(
             `api/blog/${id}`,
             config.fetchRequestConfigs(),
         );
 
-        let result = extractResultJson(response);
-
-        throwIfNotFound(result);
-
-        return result;
+        return extractResultJson(response);
     }
 
     /**
