@@ -1,6 +1,7 @@
 let path = require('path');
 let fs = require('fs');
 let version = require('./package').version;
+let webpack = require('webpack');
 // Load vue file
 let VueLoaderPlugin = require('vue-loader/lib/plugin');
 // Copy & Load HTML
@@ -98,7 +99,13 @@ let config = {
             filename: '[name]/[name].style[chunkhash:5].css'
         }),
 
-        new NoGlue()
+        new NoGlue(),
+
+        new webpack.ProvidePlugin({
+            $:"jquery",
+            Jquery:"jquery",
+            "window.jQuery":"jquery"
+        })
 
     ],
 

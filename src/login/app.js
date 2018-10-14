@@ -1,6 +1,7 @@
 import './style.css';
 
 const sdk = require('../lib/KCIbald-blog-SDK');
+const alertlib = require('../lib/alertlib');
 
 let siteKey = '6LepWGkUAAAAAOuDkXsDYx5ohu-kas5-As7x047v';
 
@@ -18,10 +19,12 @@ document.onkeyup = (keyEvent) => {
 
 function loginRequestFailed(failure) {
 //    Exception logic
+    alertlib.user_err("Wrong username or password!");
     console.log(failure);
 }
 
 function loginException(exception) {
+    alertlib.unexpected_err('3333');
     console.log(exception);
 }
 
@@ -60,6 +63,7 @@ function startLogin(token) {
 
     } catch (e) {
         //Recaptcha do not handle error from our callable
+        layer.alert('见到你真的很高兴', {icon: 2});
         console.error(e);
     }
 }
