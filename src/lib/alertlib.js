@@ -1,11 +1,14 @@
-const $ = require("jquery");
 const layer = require("layui-layer");
 const exp ={};
 
+layer.config({
+    path: '/node_modules/layui-layer/src/'
+});
+
 function user_err(info){
-    layer.msg('灵活运用offset', {
+    layer.msg(info, {
         offset: 't',
-        anim: 1
+        anim: 1,
     });
 }
 

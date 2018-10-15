@@ -8,7 +8,9 @@ let siteKey = '6LepWGkUAAAAAOuDkXsDYx5ohu-kas5-As7x047v';
 window.onload = () => {
     grecaptcha.render('login', {
         'sitekey': siteKey,
-        'callback': startLogin
+        'callback': startLogin,
+        'expired-callback':recap_expired,
+        'error-callback':recap_error
     });
 };
 
@@ -16,6 +18,14 @@ document.onkeyup = (keyEvent) => {
     if (keyEvent.key === 'Enter')
         document.getElementById('login').click();
 };
+
+function recap_expired() {
+    alertlib.user_err("")
+}
+
+function recap_error() {
+    alertlib.user_err("Internet failed! Please check your Internet.")
+}
 
 function loginRequestFailed(failure) {
 //    Exception logic
@@ -29,6 +39,7 @@ function loginException(exception) {
 }
 
 function reset() {
+    window.location.reload()
 }
 
 function loginSuccess(value: sdk.datastructures.Result) {
