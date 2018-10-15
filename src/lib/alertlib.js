@@ -1,3 +1,5 @@
+require("../css/alertlib.css");
+
 const layer = require("layui-layer");
 const exp ={};
 
@@ -9,6 +11,9 @@ function user_err(info){
     layer.msg(info, {
         offset: 't',
         anim: 1,
+        time:5000000,
+        //time for develop environment
+        skin: 'alertlib'
     });
 }
 

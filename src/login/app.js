@@ -4,6 +4,8 @@ const sdk = require('../lib/KCIbald-blog-SDK');
 const alertlib = require('../lib/alertlib');
 
 let siteKey = '6LepWGkUAAAAAOuDkXsDYx5ohu-kas5-As7x047v';
+let location = window.location.href;
+
 
 window.onload = () => {
     grecaptcha.render('login', {
@@ -12,6 +14,9 @@ window.onload = () => {
         'expired-callback':recap_expired,
         'error-callback':recap_error
     });
+    if(window.location.href.includes("?wrongpas=True")){
+        alertlib.user_err("Invalid password.")
+    }
 };
 
 document.onkeyup = (keyEvent) => {
@@ -31,6 +36,7 @@ function loginRequestFailed(failure) {
 //    Exception logic
     alertlib.user_err("Wrong username or password!");
     console.log(failure);
+    window.location = "http://127.0.0.1:8080/login?wrongpas=True"
 }
 
 function loginException(exception) {
@@ -69,7 +75,6 @@ function startLogin(token) {
             .loginApi.attemptLogin(username, password, token)
             .then(value => value.success ? loginSuccess(value) : loginRequestFailed(value))
             .catch(exception => loginException(exception))
-            .finally(_ => reset())
 
 
     } catch (e) {
