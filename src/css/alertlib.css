@@ -2,4 +2,5 @@ body .alertlib .layui-layer-content{
     background-color: #FF5722;
     color: white;
     font-size: 1.2em;
+    border: 1px solid #FF5722;
 }
